@@ -62,11 +62,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  img: {
-    height: 300,
-    width: 300,
-    alignSelf: "center",
-  },
   button: {
     backgroundColor: "#4287f5",
     padding: 12,

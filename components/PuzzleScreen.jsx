@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import GlobalStyles from "./GlobalStyles";
 import {
   Alert,
+  Dimensions,
   Image,
   SafeAreaView,
   StyleSheet,
@@ -12,6 +13,7 @@ import { useFocusEffect } from "@react-navigation/native";
 import ImageFragment from "./ImageFragment";
 
 const PuzzleScreen = ({ navigation, route }) => {
+  const length = Dimensions.get("window").width - 25;
   const [image, setImage] = useState(null);
   const [level, setLevel] = useState(null);
   const [list, setList] = useState([]);
@@ -55,7 +57,6 @@ const PuzzleScreen = ({ navigation, route }) => {
   useFocusEffect(
     useCallback(() => {
       if (!level || !image) return;
-      const length = 300 / level;
       const temp = [];
       const map = new Set();
       let count = 0;
@@ -69,26 +70,30 @@ const PuzzleScreen = ({ navigation, route }) => {
         const i = Math.floor(count / level),
           j = count % level;
         count += 1;
-        temp.push(
-          <ImageFragment
-            length={length}
-            image={image}
-            i={i}
-            j={j}
-            x={x}
-            y={y}
-          />
-        );
+        temp.push({ x, y, i, j });
       }
       setList(temp);
     }, [level, image])
   );
+
+  useEffect(() => {
+    console.log("list", list.map((el) => el.x * level + el.y).join(" "));
+  }, [list]);
+
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.puzzleContainer}>
-        {list.map((el, idx) => ({ ...el, key: idx }))}
+      <View
+        style={{ ...styles.puzzleContainer, width: length, height: length }}
+      >
+        {list.map((el, idx) => (
+          <ImageFragment
+            key={idx}
+            {...el}
+            length={length / level}
+            image={image}
+          />
+        ))}
       </View>
-      {/* <Image source={{ uri: image }} style={styles.img} /> */}
     </SafeAreaView>
   );
 };
@@ -108,12 +113,6 @@ const styles = StyleSheet.create({
     bordercolor: "black",
   },
   puzzleContainer: {
-    width: 300,
-    height: 300,
     position: "relative",
-  },
-  img: {
-    width: 300,
-    height: 300,
   },
 });

@@ -6,6 +6,7 @@ import {
   Text,
   Image,
   View,
+  Dimensions,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import GlobalStyles from "./GlobalStyles";
@@ -32,6 +33,7 @@ const options = [
 ];
 
 const MainScreen = ({ navigation }) => {
+  const length = Dimensions.get("window").width - 25;
   const [image, setImage] = useState(null);
   const [level, setLevel] = useState(null);
 
@@ -75,15 +77,21 @@ const MainScreen = ({ navigation }) => {
   return (
     <SafeAreaView style={styles.container}>
       {image ? (
-        <Image style={styles.img} source={{ uri: image }} />
+        <Image
+          style={{ width: length, height: length }}
+          source={{ uri: image }}
+        />
       ) : (
-        <Pressable style={styles.emptyImage} onPress={onSelectImage}>
+        <Pressable
+          style={{ ...styles.emptyImage, width: length, height: length }}
+          onPress={onSelectImage}
+        >
           <Text>
             <AntDesign name="picture" size={50} color="darkgray" />
           </Text>
         </Pressable>
       )}
-      <View style={styles.levelContainer}>
+      <View style={{ ...styles.levelContainer, width: length }}>
         {options.map(({ N, value }) => (
           <Pressable
             key={N}
@@ -103,6 +111,7 @@ const MainScreen = ({ navigation }) => {
         onPress={onSelectImage}
         style={{
           ...styles.button,
+          width: length,
           backgroundColor: "#8091ff",
         }}
       >
@@ -114,6 +123,7 @@ const MainScreen = ({ navigation }) => {
         onPress={handlePress}
         style={{
           ...styles.button,
+          width: length,
           backgroundColor: image ? "#8091ff" : "darkgray",
         }}
       >
@@ -136,8 +146,6 @@ const styles = StyleSheet.create({
   },
   emptyImage: {
     display: "flex",
-    height: 300,
-    width: 300,
     borderColor: "gray",
     justifyContent: "center",
     alignItems: "center",
@@ -146,7 +154,6 @@ const styles = StyleSheet.create({
   },
   button: {
     marginTop: 15,
-    width: 300,
     height: 50,
     color: "white",
     display: "flex",
@@ -155,12 +162,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     elevation: 10,
   },
-  img: {
-    width: 300,
-    height: 300,
-  },
   levelContainer: {
-    width: 300,
     height: 50,
     display: "flex",
     justifyContent: "space-between",

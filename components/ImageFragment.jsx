@@ -1,8 +1,9 @@
-import { Image, StyleSheet, View } from "react-native";
+import { Image, StyleSheet, Pressable, Dimensions } from "react-native";
 
 const ImageFragment = ({ length, image, i, j, x, y }) => {
+  const totalLength = Dimensions.get("window").width - 25;
   return (
-    <View
+    <Pressable
       style={{
         ...styles.container,
         width: length,
@@ -15,15 +16,15 @@ const ImageFragment = ({ length, image, i, j, x, y }) => {
       <Image
         source={{ uri: image }}
         style={{
-          width: 300,
-          height: 300,
+          width: totalLength,
+          height: totalLength,
           position: "absolute",
           left: y * length * -1,
           top: x * length * -1,
         }}
         resizeMode="cover"
       />
-    </View>
+    </Pressable>
   );
 };
 
