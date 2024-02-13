@@ -1,9 +1,18 @@
-import { Image, StyleSheet, Pressable, Dimensions } from "react-native";
+import { useEffect, useRef } from "react";
+import {
+  Image,
+  StyleSheet,
+  Pressable,
+  Dimensions,
+  Animated,
+} from "react-native";
 
-const ImageFragment = ({ length, image, i, j, x, y }) => {
+const ImageFragment = ({ length, image, i, j, x, y, handleMovePuzzle }) => {
   const totalLength = Dimensions.get("window").width - 25;
+
   return (
     <Pressable
+      onPress={() => handleMovePuzzle(i, j)}
       style={{
         ...styles.container,
         width: length,

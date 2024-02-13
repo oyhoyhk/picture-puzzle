@@ -4,6 +4,7 @@ import {
   Alert,
   Dimensions,
   Image,
+  Pressable,
   SafeAreaView,
   StyleSheet,
   Text,
@@ -17,10 +18,23 @@ const PuzzleScreen = ({ navigation, route }) => {
   const [image, setImage] = useState(null);
   const [level, setLevel] = useState(null);
   const [list, setList] = useState([]);
+  const [current, setCurrent] = useState({ x: level - 1, y: level - 1 });
+
+  const handleMovePuzzle = (i, j) => {
+    const { x, y } = current;
+    if (Math.abs(x - i) + Math.abs(y - j) !== 1) return;
+    setCurrent({ x: i, y: j });
+    setList((prev) => {
+      const temp = [...prev];
+      const idx = temp.findIndex((el) => el.i === i && el.j === j);
+      temp[idx].i = x;
+      temp[idx].j = y;
+      return temp;
+    });
+  };
 
   useFocusEffect(
     useCallback(() => {
-      console.log("useEffect", route, image);
       if ((!route.params || (route.params && !route.params.image)) && !image) {
         Alert.alert(
           "Select an Image!",
@@ -51,6 +65,7 @@ const PuzzleScreen = ({ navigation, route }) => {
       }
       setImage(route.params.image);
       setLevel(route.params.level);
+      setCurrent({ x: route.params.level - 1, y: route.params.level - 1 });
     }, [])
   );
 
@@ -64,7 +79,6 @@ const PuzzleScreen = ({ navigation, route }) => {
         const num = Math.floor(Math.random() * (level * level - 1));
         if (map.has(num)) continue;
         map.add(num);
-        console.log(num);
         const x = Math.floor(num / level),
           y = num % level;
         const i = Math.floor(count / level),
@@ -76,9 +90,10 @@ const PuzzleScreen = ({ navigation, route }) => {
     }, [level, image])
   );
 
-  useEffect(() => {
-    console.log("list", list.map((el) => el.x * level + el.y).join(" "));
-  }, [list]);
+  // 퍼즐 완료 체크 로직
+  // useEffect(() => {
+  //   console.log("list", list.map((el) => el.x * level + el.y).join(" "));
+  // }, [list]);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -89,6 +104,7 @@ const PuzzleScreen = ({ navigation, route }) => {
           <ImageFragment
             key={idx}
             {...el}
+            handleMovePuzzle={handleMovePuzzle}
             length={length / level}
             image={image}
           />
