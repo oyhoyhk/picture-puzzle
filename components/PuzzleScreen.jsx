@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import GlobalStyles from "./GlobalStyles";
 import {
   Alert,
@@ -12,25 +12,53 @@ import {
 } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import ImageFragment from "./ImageFragment";
+import completionCheck from "../lib/completionCheck";
 
 const PuzzleScreen = ({ navigation, route }) => {
   const length = Dimensions.get("window").width - 25;
   const [image, setImage] = useState(null);
   const [level, setLevel] = useState(null);
   const [list, setList] = useState([]);
-  const [current, setCurrent] = useState({ x: level - 1, y: level - 1 });
+  const [current, setCurrent] = useState({
+    x: (level ?? 0) - 1,
+    y: (level ?? 0) - 1,
+  });
+  const [touchCount, setTouchCount] = useState(0);
+
+  const isMoving = useRef(false);
 
   const handleMovePuzzle = (i, j) => {
     const { x, y } = current;
-    if (Math.abs(x - i) + Math.abs(y - j) !== 1) return;
-    setCurrent({ x: i, y: j });
+
+    if (Math.abs(x - i) + Math.abs(y - j) !== 1 && isMoving.current) return;
+
+    isMoving.current = true;
+    setTouchCount((count) => count + 1);
+
     setList((prev) => {
       const temp = [...prev];
-      const idx = temp.findIndex((el) => el.i === i && el.j === j);
-      temp[idx].i = x;
-      temp[idx].j = y;
+      const idx = temp.findIndex((el) => el.posX === i && el.posY === j);
+      temp[idx].dx = x - i;
+      temp[idx].dy = y - j;
+
       return temp;
     });
+
+    //setTimeout(() => {
+    //  setCurrent({ x: i, y: j });
+    //  setList((prev) => {
+    //    const temp = [...prev];
+    //    const idx = temp.findIndex((el) => el.i === i && el.j === j);
+    //    temp[idx].i = x;
+    //    temp[idx].j = y;
+
+    //    return temp;
+    //  });
+    //}, 300);
+
+    //setTimeout(() => {
+    //  isMoving.current = false;
+    //}, 1500);
   };
 
   useFocusEffect(
@@ -79,24 +107,39 @@ const PuzzleScreen = ({ navigation, route }) => {
         const num = Math.floor(Math.random() * (level * level - 1));
         if (map.has(num)) continue;
         map.add(num);
-        const x = Math.floor(num / level),
-          y = num % level;
-        const i = Math.floor(count / level),
-          j = count % level;
+        const imageX = Math.floor(num / level),
+          imageY = num % level;
+        const posX = Math.floor(count / level),
+          posY = count % level;
         count += 1;
-        temp.push({ x, y, i, j });
+        temp.push({ imageX, imageY, posX, posY, dx: 0, dy: 0 });
       }
       setList(temp);
+      console.log(temp);
     }, [level, image])
   );
 
   // 퍼즐 완료 체크 로직
-  // useEffect(() => {
-  //   console.log("list", list.map((el) => el.x * level + el.y).join(" "));
-  // }, [list]);
+  useEffect(() => {
+    if (completionCheck(list, level)) {
+      Alert.alert(
+        "Puzzle Completed!",
+        "Congratulations! You have completed the puzzle",
+        [
+          {
+            text: "Cancel",
+            style: "cancel",
+          },
+        ]
+      );
+    }
+  }, [list]);
 
   return (
     <SafeAreaView style={styles.container}>
+      <View style={styles.touchContainer}>
+        <Text>Count : {touchCount}</Text>
+      </View>
       <View
         style={{ ...styles.puzzleContainer, width: length, height: length }}
       >
@@ -107,6 +150,9 @@ const PuzzleScreen = ({ navigation, route }) => {
             handleMovePuzzle={handleMovePuzzle}
             length={length / level}
             image={image}
+            setList={setList}
+            setCurrent={setCurrent}
+            isMoving
           />
         ))}
       </View>
@@ -130,5 +176,8 @@ const styles = StyleSheet.create({
   },
   puzzleContainer: {
     position: "relative",
+  },
+  touchContainer: {
+    width: "100%",
   },
 });

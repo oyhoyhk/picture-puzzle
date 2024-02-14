@@ -7,33 +7,94 @@ import {
   Animated,
 } from "react-native";
 
-const ImageFragment = ({ length, image, i, j, x, y, handleMovePuzzle }) => {
+const ImageFragment = ({
+  length,
+  image,
+  posX,
+  posY,
+  imageX,
+  imageY,
+  dx,
+  dy,
+  handleMovePuzzle,
+  setList,
+  setCurrent,
+  isMoving,
+}) => {
   const totalLength = Dimensions.get("window").width - 25;
+  const animationValue = useRef(
+    new Animated.ValueXY({ x: posX * length, y: posY * length })
+  ).current;
+
+  useEffect(() => {
+    Animated.timing(animationValue, {
+      toValue: { x: (posX + dx) * length, y: (posY + dy) * length },
+      duration: 150,
+      useNativeDriver: false,
+    }).start(() => {
+      if (dx !== 0 || dy !== 0) {
+        setList((prev) => {
+          const temp = [...prev];
+          const idx = temp.findIndex(
+            (el) => el.posX === posX && el.posY === posY
+          );
+          temp[idx].posX = posX + dx;
+          temp[idx].posY = posY + dy;
+          temp[idx].dx = 0;
+          temp[idx].dy = 0;
+
+          return temp;
+        });
+        setCurrent((prev) => ({ x: prev.x - dx, y: prev.y - dy }));
+        isMoving.current = false;
+      }
+    });
+  }, [dx, dy]);
+
+  //const animatedStyle = {
+  //  left: animationValue.interpolate({
+  //    inputRange: [0, 1],
+  //    outputRange: [j * length, (j + dy) * length],
+  //  }),
+  //  top: animationValue.interpolate({
+  //    inputRange: [0, 1],
+  //    outputRange: [i * length, (i + dx) * length],
+  //  }),
+  //};
 
   return (
-    <Pressable
-      onPress={() => handleMovePuzzle(i, j)}
+    <Animated.View
       style={{
-        ...styles.container,
         width: length,
         height: length,
-        left: j * length,
-        top: i * length,
-        overflow: "hidden",
+        position: "absolute",
+        backgroundColor: "red",
+        left: animationValue.y,
+        top: animationValue.x,
       }}
     >
-      <Image
-        source={{ uri: image }}
+      <Pressable
+        onPress={() => handleMovePuzzle(posX, posY)}
         style={{
-          width: totalLength,
-          height: totalLength,
-          position: "absolute",
-          left: y * length * -1,
-          top: x * length * -1,
+          ...styles.container,
+          width: "100%",
+          height: "100%",
+          overflow: "hidden",
         }}
-        resizeMode="cover"
-      />
-    </Pressable>
+      >
+        <Image
+          source={{ uri: image }}
+          style={{
+            width: totalLength,
+            height: totalLength,
+            position: "absolute",
+            left: imageY * length * -1,
+            top: imageX * length * -1,
+          }}
+          resizeMode="cover"
+        />
+      </Pressable>
+    </Animated.View>
   );
 };
 
